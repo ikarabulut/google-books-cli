@@ -1,6 +1,6 @@
 require "http"
 
-class Google_books_api
+class GoogleBooksApi
   def initialize
     @link = "https://www.googleapis.com/books/v1/volumes?q="
     @parameters = ["Author", "Title", "Publisher", "Subject"]
@@ -134,5 +134,5 @@ class Google_books_api
 
 end
 
-new_search = Google_books_api.new
+new_search = GoogleBooksApi.new
 new_search.start_search
