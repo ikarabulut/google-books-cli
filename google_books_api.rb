@@ -1,138 +1,111 @@
 require "http"
 
-class GoogleBooksApi
+class Search
+  attr_accessor :query, :link, :fields, :max_results, :response, :books_list
+
   def initialize
-    @link = "https://www.googleapis.com/books/v1/volumes?q="
-    @parameters = ["Author", "Title", "Publisher", "Subject"]
     @query
-    @author
-    @title
-    @publisher
-    @subject
+    @link = "https://www.googleapis.com/books/v1/volumes?q=title:"
+    @fields = "&fields=items(volumeInfo/title,volumeInfo/authors,volumeInfo/publisher)"
+    @max_results = "&maxResults=5"
     @response
-    @book1 = {}
-    @book2 = {}
-    @book3 = {}
-    @book4 = {}
-    @book5 = {}
-    @books_list = []
-    @saved_books = []
+    @books_list
+    response
   end
 
   def start_search
-    puts "Please enter your search query:"
+    puts "Welcome to Google Books Search, please enter your search query:"
     @query = gets.chomp().downcase.tr(" ","_")
-    puts "Which additional parameter would you like to search by?"
-    puts @parameters
-    puts "Please type your selection:"
-    parameter = gets.chomp().downcase
-    if parameter == "author"
-      author_search
-    elsif parameter == "title"
-      title_search
-    elsif parameter == "publisher"
-      publisher_search
-    elsif parameter == "subject"
-      subject_search
-    else
-      puts "Input not recognized, please rerun app"
-    end
-
+    response
   end
 
-  def author_search
-    puts "Please enter author:"
-    @author = "inauthor:" + gets.chomp().downcase.tr(" ","_")
-    @response = HTTP.get("#{@link}#{@query}&#{@author}.json")
-    book1
-  end
-
-  def title_search
-    puts "Please enter title:"
-    @title = "intitle:" + gets.chomp().downcase.tr(" ","_")
-    @response = HTTP.get("#{@link}#{@query}&#{@title}.json")
-    book1
-  end
-
-  def publisher_search
-    puts "Please enter publisher:"
-    @publisher = "inpublisher:" + gets.chomp().downcase.tr(" ","_")
-    @response = HTTP.get("#{@link}#{@query}&#{@publisher}.json")
-    book1
-  end
-
-  def subject_search
-    puts "Please enter subject:"
-    @subject = "subject:" + gets.chomp().downcase.tr(" ","_")
-    @response = HTTP.get("#{@link}#{@query}&#{@subject}.json")
-    book1
-  end
-
-  def book1
+  def response
+    @response = HTTP.get("#{@link}#{@query}#{@fields}#{@max_results}")
     @response = @response.parse(:json)
-    @book1["title"] = @response["items"][0]["volumeInfo"]["title"]
-    @book1["author"] = @response["items"][0]["volumeInfo"]["authors"]
-    @book1["publisher"] = @response["items"][0]["volumeInfo"]["publisher"]
-    book2
-  end
-
-  def book2
-    @response
-    @book2["title"] = @response["items"][1]["volumeInfo"]["title"]
-    @book2["author"] = @response["items"][1]["volumeInfo"]["authors"]
-    @book2["publisher"] = @response["items"][1]["volumeInfo"]["publisher"]
-    book3
-  end
-
-  def book3
-    @response
-    @book3["title"] = @response["items"][2]["volumeInfo"]["title"]
-    @book3["author"] = @response["items"][2]["volumeInfo"]["authors"]
-    @book3["publisher"] = @response["items"][2]["volumeInfo"]["publisher"]
-    book4
-  end
-
-  def book4
-    @response
-    @book4["title"] = @response["items"][3]["volumeInfo"]["title"]
-    @book4["author"] = @response["items"][3]["volumeInfo"]["authors"]
-    @book4["publisher"] = @response["items"][3]["volumeInfo"]["publisher"]
-    book5
-  end
-
-  def book5
-    @response
-    @book5["title"] = @response["items"][4]["volumeInfo"]["title"]
-    @book5["author"] = @response["items"][4]["volumeInfo"]["authors"]
-    @book5["publisher"] = @response["items"][4]["volumeInfo"]["publisher"]
-    list_books
-  end
-
-  def list_books
-    @books_list << @book1
-    @books_list << @book2
-    @books_list << @book3
-    @books_list << @book4
-    @books_list << @book5
-    puts @books_list
-    save
-  end
-
-  def save
-    i = 0
-    while i < 5
-      puts "Would you like to save #{@books_list[i]["title"]}? (y/n)"
-      answer = gets.chomp().downcase
-      if answer == "y"
-        @saved_books << @books_list[i]
-      end
-      i += 1
-    end
-    puts "Your saved books are:"
-    puts @saved_books
+    @books_list = @response["items"]
   end
 
 end
 
-new_search = GoogleBooksApi.new
-new_search.start_search
+class BookList
+attr_accessor :books_list, :books
+  def initialize(books_list)
+    @books_list = books_list
+    @books = []
+    @books << @books_list[0]["volumeInfo"]
+    @books << @books_list[1]["volumeInfo"]
+    @books << @books_list[2]["volumeInfo"]
+    @books << @books_list[3]["volumeInfo"]
+    @books << @books_list[4]["volumeInfo"]
+  end
+
+  def list_books
+    i = 1
+    books.each do |book|
+      puts "Book #{i}"
+      puts "Title: #{book["title"]}"
+      puts "Author(s): #{book["authors"]}"
+      puts "Publisher: #{book["publisher"]}"
+      puts "-------------------------"
+      i += 1
+    end
+  end
+end
+
+class SavedBook
+attr_accessor :saved_books, :book
+  def initialize
+    @saved_books = []
+  end
+
+  def save_book(book)
+    @book = book
+    @saved_books << @book
+  end
+
+  def list_saved_books
+    i = 1
+    saved_books.each do |book|
+      puts "Saved Book #{i}"
+      puts "Title: #{book["title"]}"
+      puts "Author(s): #{book["authors"]}"
+      puts "Publisher: #{book["publisher"]}"
+      puts "-------------------------"
+      i += 1
+    end
+  end
+
+end
+
+current_search = Search.new
+current_search.start_search
+search_results = current_search.books_list  ### Sets new search_results variable that will stor @books_list for the BookList class
+
+# Creates a BookList instance  which loads up the book_list from the previous search
+books_list = BookList.new(search_results)
+books_list.list_books ### lists the books in a user friendly manner
+books = books_list.books     ### Creates the books variable that will store the 5 books in an array
+
+
+# Creates a new Saved Books instance called saved_books
+saved_books = SavedBook.new
+
+while true
+  puts "Which book would you like to save? Please enter 1-5"
+  book_number = gets.chomp().to_i - 1
+  book = books[book_number]
+  saved_books.save_book(book)
+  puts "Would you like to save another book? Yes/No"
+  response = gets.chomp().downcase
+  if response == "yes"
+    true
+  elsif response == "no"
+    puts "Your saved books are:"
+    break
+  else
+    puts "Input not recognized, moving on to your saved books"
+    break
+  end
+end
+
+saved_books.list_saved_books
