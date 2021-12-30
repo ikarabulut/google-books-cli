@@ -91,8 +91,20 @@ books = books_list.books     ### Creates the books variable that will store the 
 saved_books = SavedBook.new
 
 while true
+
   puts "Which book would you like to save? Please enter 1-5"
-  book_number = gets.chomp().to_i - 1
+  puts "If you do not wish to save a book please enter 'no'"
+  book_number = gets.chomp()
+  if book_number == 'no'
+    puts "Thank you for using the Google Books Api, Goodbye"
+    break
+  elsif book_number == "1" || book_number == "2" || book_number == "3" || book_number == "4" || book_number == "5"
+    book_number = book_number.to_i - 1
+    true
+  else
+    puts "Input not recognized, please rerun app"
+    break
+  end
   book = books[book_number]
   saved_books.save_book(book)
   puts "Would you like to save another book? Yes/No"
@@ -103,9 +115,10 @@ while true
     puts "Your saved books are:"
     break
   else
-    puts "Input not recognized, moving on to your saved books"
-    break
+    puts "Input not recognized, please try again"
+    true
   end
+
 end
 
 saved_books.list_saved_books
