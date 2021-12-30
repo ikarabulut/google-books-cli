@@ -3,19 +3,13 @@ require "http"
 class Search
   attr_accessor :query, :link, :fields, :max_results, :response, :books_list
 
-  def initialize
-    @query
+  def initialize(query)
+    @query = query
     @link = "https://www.googleapis.com/books/v1/volumes?q=title:"
     @fields = "&fields=items(volumeInfo/title,volumeInfo/authors,volumeInfo/publisher)"
     @max_results = "&maxResults=5"
     @response
     @books_list
-    response
-  end
-
-  def start_search
-    puts "Welcome to Google Books Search, please enter your search query:"
-    @query = gets.chomp().downcase.tr(" ","_")
     response
   end
 
@@ -77,13 +71,16 @@ attr_accessor :saved_books, :book
 
 end
 
-current_search = Search.new
-current_search.start_search
-search_results = current_search.books_list  ### Sets new search_results variable that will stor @books_list for the BookList class
+### Starts Program
+puts "Welcome to Google Books Search, please enter your search query:"
+query = gets.chomp().downcase.tr(" ","_")
 
-# Creates a BookList instance  which loads up the book_list from the previous search
-books_list = BookList.new(search_results)
-books_list.list_books ### lists the books in a user friendly manner
+## Creates new Search instance
+current_search = Search.new(query)
+search_results = current_search.books_list  ### Sets new search_results variable that will store @books_list for the BookList class
+
+books_list = BookList.new(search_results)   ### Creates a BookList instance  which loads up the book_list from the previous search
+books_list.list_books        ### lists the books in a user friendly manner
 books = books_list.books     ### Creates the books variable that will store the 5 books in an array
 
 
