@@ -14,13 +14,14 @@ class Search
   end
 
   def response
-    test_response = HTTP.get("https://www.googleapis.com/books/v1/volumes?q=test")
+    test_response = HTTP.get("https://www.googleapis.com/books/v1/volumes?q=")
     if test_response.status == 200
       @response = HTTP.get("#{@link}#{@query}#{@fields}#{@max_results}")
       @response = @response.parse(:json)
       @books_list = @response["items"]
     else
       p "Whoops something went wrong, please try again later"
+      exit
     end
   end
 
